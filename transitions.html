@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Animations & localStorage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Inter font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.5s ease, color 0.5s ease; /* Smooth theme transition */
+        }
+
+        /* CSS Animation: Pulsing Box */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+        }
+
+        .pulsing-box {
+            width: 100px;
+            height: 100px;
+            background-color: #3498db; /* Blue color */
+            animation: pulse 2s infinite ease-in-out;
+            border-radius: 0.5rem; /* Rounded corners */
+        }
+
+        /* CSS Animation: Button Hover */
+        .animated-button {
+            transition: transform 0.3s ease, background-color 0.3s ease; /* Smooth hover transition */
+        }
+
+        .animated-button:hover {
+            transform: translateY(-5px) scale(1.05); /* Moves button up and slightly enlarges */
+        }
+
+        /* JavaScript Triggered Animation */
+        .js-animated-element {
+            width: 80px;
+            height: 80px;
+            background-color: #9b59b6; /* Purple color */
+            border-radius: 0.5rem;
+            transition: transform 0.5s ease-out, background-color 0.5s ease; /* Smooth JS animation */
+        }
+
+        .js-animated-element.animate {
+            transform: translateX(150px) rotate(360deg);
+            background-color: #e74c3c; /* Red color when animated */
+        }
+
+        /* Theme Styles */
+        .theme-light {
+            background-color: #f8f9fa; /* Light gray background */
+            color: #212529; /* Dark text */
+        }
+
+        .theme-dark {
+            background-color: #343a40; /* Dark gray background */
+            color: #f8f9fa; /* Light text */
+        }
+
+        /* Custom Message Box for alerts */
+        .custom-message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .custom-message-box-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-message-box {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 90%;
+            width: 350px;
+        }
+        .custom-message-box p {
+            margin-bottom: 20px;
+            color: #333; /* Text color for message box content */
+        }
+        .custom-message-box button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .theme-dark .custom-message-box {
+            background-color: #495057; /* Darker background for message box in dark theme */
+        }
+         .theme-dark .custom-message-box p {
+            color: #f1f3f5; /* Lighter text for message box content in dark theme */
+        }
+
+    </style>
+</head>
+<body class="theme-light min-h-screen flex flex-col items-center justify-center p-6 selection:bg-blue-500 selection:text-white">
+
+    <div id="app-container" class="w-full max-w-3xl bg-white dark:bg-gray-800 shadow-xl rounded-lg p-8 space-y-8">
+
+        <header class="text-center">
+            <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-400">Interactive Animations Showcase</h1>
+            <p class="text-gray-600 dark:text-gray-300 mt-2">Exploring CSS Animations, JavaScript, and localStorage.</p>
+        </header>
+
+        <section class="p-6 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">1. Pure CSS Animation</h2>
+            <p class="mb-4 text-gray-600 dark:text-gray-400">This box uses a CSS keyframe animation to pulse continuously.</p>
+            <div class="flex justify-center">
+                <div class="pulsing-box"></div>
+            </div>
+        </section>
+
+        <section class="p-6 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">2. User Preferences with localStorage</h2>
+            <p class="mb-4 text-gray-600 dark:text-gray-400">Choose a theme. Your preference will be saved and loaded on your next visit.</p>
+            <div class="flex items-center justify-center space-x-4">
+                <label class="flex items-center space-x-2 cursor-pointer text-gray-700 dark:text-gray-300">
+                    <input type="radio" name="theme" value="light" class="form-radio text-blue-500 focus:ring-blue-500">
+                    <span>Light Mode</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer text-gray-700 dark:text-gray-300">
+                    <input type="radio" name="theme" value="dark" class="form-radio text-indigo-500 focus:ring-indigo-500">
+                    <span>Dark Mode</span>
+                </label>
+            </div>
+        </section>
+
+        <section class="p-6 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">3. JavaScript-Triggered Animation</h2>
+            <p class="mb-4 text-gray-600 dark:text-gray-400">Click the button below to trigger an animation on the purple square.</p>
+            <div class="flex flex-col items-center space-y-6">
+                <button id="triggerAnimationBtn" class="animated-button bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
+                    Trigger Animation
+                </button>
+                <div class="js-animated-element"></div>
+            </div>
+        </section>
+
+        <footer class="text-center mt-8">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Demonstration of web interactivity.</p>
+        </footer>
+
+    </div>
+
+    <div id="customMessageBoxOverlay" class="custom-message-box-overlay">
+        <div class="custom-message-box">
+            <p id="customMessageText"></p>
+            <button id="customMessageOkButton" class="bg-blue-500 hover:bg-blue-600 text-white">OK</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeRadios = document.querySelectorAll('input[name="theme"]');
+            const triggerAnimationBtn = document.getElementById('triggerAnimationBtn');
+            const jsAnimatedElement = document.querySelector('.js-animated-element');
+            const body = document.body;
+            const appContainer = document.getElementById('app-container'); // For dark mode styling of the container
+
+            // --- Custom Message Box Logic ---
+            const messageBoxOverlay = document.getElementById('customMessageBoxOverlay');
+            const messageTextElement = document.getElementById('customMessageText');
+            const messageOkButton = document.getElementById('customMessageOkButton');
+
+            function showMessage(message) {
+                messageTextElement.textContent = message;
+                messageBoxOverlay.classList.add('visible');
+            }
+
+            messageOkButton.addEventListener('click', () => {
+                messageBoxOverlay.classList.remove('visible');
+            });
+
+
+            // --- Theme Management ---
+            const PREFERRED_THEME_KEY = 'userPreferredTheme';
+
+            // Function to apply the theme
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    body.classList.remove('theme-light');
+                    body.classList.add('theme-dark');
+                    appContainer.classList.add('dark'); // For Tailwind dark mode on container
+                    showMessage('Dark theme applied! Preference saved.');
+                } else {
+                    body.classList.remove('theme-dark');
+                    body.classList.add('theme-light');
+                    appContainer.classList.remove('dark');
+                    showMessage('Light theme applied! Preference saved.');
+                }
+                // Update radio button to reflect the current theme
+                document.querySelector(`input[name="theme"][value="${theme}"]`).checked = true;
+            }
+
+            // Function to save theme preference to localStorage
+            function saveThemePreference(theme) {
+                try {
+                    localStorage.setItem(PREFERRED_THEME_KEY, theme);
+                } catch (e) {
+                    console.error("Failed to save theme to localStorage:", e);
+                    showMessage("Could not save theme preference. LocalStorage might be disabled or full.");
+                }
+            }
+
+            // Load saved theme on page load
+            function loadSavedTheme() {
+                let savedTheme = 'light'; // Default to light
+                try {
+                    const storedTheme = localStorage.getItem(PREFERRED_THEME_KEY);
+                    if (storedTheme) {
+                        savedTheme = storedTheme;
+                    }
+                } catch (e) {
+                     console.error("Failed to read theme from localStorage:", e);
+                     // Keep default theme
+                }
+                applyTheme(savedTheme); // Apply without showing message on initial load
+                 // Silently apply theme on load, then set radio
+                if (savedTheme === 'dark') {
+                    body.classList.remove('theme-light');
+                    body.classList.add('theme-dark');
+                    appContainer.classList.add('dark');
+                } else {
+                    body.classList.remove('theme-dark');
+                    body.classList.add('theme-light');
+                    appContainer.classList.remove('dark');
+                }
+                document.querySelector(`input[name="theme"][value="${savedTheme}"]`).checked = true;
+            }
+
+
+            // Event listener for theme radio buttons
+            themeRadios.forEach(radio => {
+                radio.addEventListener('change', (event) => {
+                    const selectedTheme = event.target.value;
+                    applyTheme(selectedTheme);
+                    saveThemePreference(selectedTheme);
+                });
+            });
+
+            // --- JavaScript Triggered Animation ---
+            triggerAnimationBtn.addEventListener('click', () => {
+                if (jsAnimatedElement.classList.contains('animate')) {
+                    jsAnimatedElement.classList.remove('animate');
+                    showMessage('Animation reset!');
+                } else {
+                    jsAnimatedElement.classList.add('animate');
+                    showMessage('Animation triggered!');
+                }
+            });
+
+            // Initial setup
+            loadSavedTheme();
+
+            // Example of a button with CSS hover animation (already handled by CSS class .animated-button)
+            // No specific JS needed for the hover itself, but we can log to console if needed.
+            const animatedButtons = document.querySelectorAll('.animated-button');
+            animatedButtons.forEach(button => {
+                button.addEventListener('mouseenter', () => {
+                    // console.log('Hovering over animated button:', button.textContent.trim());
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
